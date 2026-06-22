@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, ArrowRight } from "lucide-react";
 import faviconSvg from "@/imports/m-lg.svg";
-import imgHero from "@/imports/Landing/229a3ac2758f4e00dad9f8cccc988df955a8da9c.png";
+import imgHero from "@/imports/Landing/background.png";
 
 function TallyModal({ onClose }: { onClose: () => void }) {
   return (
