@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, ArrowRight } from "lucide-react";
+import faviconSvg from "@/imports/m-lg.svg";
 import imgHero from "@/imports/Landing/229a3ac2758f4e00dad9f8cccc988df955a8da9c.png";
 
 function TallyModal({ onClose }: { onClose: () => void }) {
@@ -34,6 +35,19 @@ function TallyModal({ onClose }: { onClose: () => void }) {
 
 export default function App() {
   const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const link: HTMLLinkElement =
+      document.querySelector("link[rel~='icon']") ||
+      (() => {
+        const el = document.createElement("link");
+        el.rel = "icon";
+        document.head.appendChild(el);
+        return el;
+      })();
+    link.type = "image/svg+xml";
+    link.href = faviconSvg;
+  }, []);
 
   return (
     <div
@@ -105,7 +119,7 @@ export default function App() {
             {/* CTA button */}
             <button
               onClick={() => setModalOpen(true)}
-              className="mt-2 bg-[#262626] hover:bg-black transition-colors text-white text-[14px] tracking-[1.4px] px-[24px] py-[16px] flex items-center gap-2 border border-[#262626] cursor-pointer"
+              className="mt-2 bg-[#262626] hover:bg-black transition-colors text-white text-[14px] tracking-[1.4px] px-[24px] py-[16px] flex items-center gap-2 border border-[#262626] cursor-pointer rounded-[12px]"
               style={{ fontWeight: 400, fontFamily: "'Poppins', sans-serif" }}
             >
               Get Early Access
