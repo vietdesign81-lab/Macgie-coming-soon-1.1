@@ -1,7 +1,7 @@
 
-  # Coming Soon Landing Page
+  # Implement Floating Headers Footers
 
-  This is a code bundle for Coming Soon Landing Page. The original project is available at https://www.figma.com/design/rP5eO4Wm2ZbLyxqeVBcEfK/Coming-Soon-Landing-Page.
+  This is a code bundle for Implement Floating Headers Footers. The original project is available at https://www.figma.com/design/OGgx07paKWPTaUHWxBDqgV/Implement-Floating-Headers-Footers.
 
   ## Running the code
 

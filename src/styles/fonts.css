@@ -1,1 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700;800&family=Inter:wght@400&display=swap');
+
+/* Aliases matching Figma's font naming convention */
+@font-face {
+  font-family: 'Poppins:Light';
+  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLDz8Z1xlFd2JQEk.woff2') format('woff2'),
+       local('Poppins Light'), local('Poppins-Light');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins:Regular';
+  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2') format('woff2'),
+       local('Poppins'), local('Poppins-Regular');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins:Bold';
+  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFd2JQEk.woff2') format('woff2'),
+       local('Poppins Bold'), local('Poppins-Bold');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins:ExtraBold';
+  src: url('https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLDD4Z1xlFd2JQEk.woff2') format('woff2'),
+       local('Poppins ExtraBold'), local('Poppins-ExtraBold');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter:Regular';
+  src: url('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2') format('woff2'),
+       local('Inter Regular'), local('Inter-Regular');
+  font-weight: normal;
+  font-style: normal;
+}
