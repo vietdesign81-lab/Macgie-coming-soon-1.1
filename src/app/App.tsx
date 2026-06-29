@@ -580,10 +580,14 @@ function FloatingFooter() {
   return (
     <div className="bg-black w-full flex flex-col items-center px-[42px] py-[20px]">
       <div className="flex flex-col md:flex-row gap-6 items-center md:items-center justify-center w-full">
-        <div className="font-['Poppins:Regular',sans-serif] leading-[0] not-italic text-[#f2efec] text-right">
-          <p className="font-['Poppins:Bold',sans-serif] leading-[24px] mb-0 text-[16px]">We believe getting dressed should feel effortless.</p>
-          <p className="leading-[24px] text-[16px]">Fashion apps help you buy more. We want to help you use more.</p>
-        </div>
+        <div className="font-['Poppins:Regular',sans-serif] leading-[0] not-italic text-[#f2efec] text-center md:text-right">
+  <p className="font-['Poppins:Bold',sans-serif] leading-[24px] mb-0 text-[16px]">
+    We believe getting dressed should feel effortless.
+  </p>
+  <p className="leading-[24px] text-[16px]">
+    Fashion apps help you buy more. We want to help you use more.
+  </p>
+</div>
         <a
           href="https://testflight.apple.com/join/34jn3uvU"
           target="_blank"
