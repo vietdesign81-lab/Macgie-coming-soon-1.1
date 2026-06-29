@@ -251,11 +251,13 @@ function Hero() {
         </div>
       </div>
       <p
-        className="-translate-x-1/2 [word-break:break-word] absolute font-['Poppins:Bold',sans-serif] leading-[92px] text-[#070707] text-[96px] text-center tracking-[-7px] w-[728px]"
-        style={{ left: 680, top: 59 }}
-      >
-        {`You don't need more clothes`}
-      </p>
+  class="absolute left-1/2 top-[59px] -translate-x-1/2 w-[728px]
+         text-center font-['Poppins:Bold',sans-serif]
+         text-[96px] leading-[92px] tracking-[-7px]
+         text-[#070707] break-words"
+>
+  You don't need more clothes
+</p>
       <div className="absolute inset-0 pointer-events-none">
         <img alt="" className="absolute inset-0 max-w-none object-cover size-full" src={imgHero2} />
       </div>
