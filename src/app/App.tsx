@@ -527,7 +527,7 @@ function DesignedForSection() {
   return (
     <div className="relative bg-white w-[1401px] h-[980px] overflow-hidden">
       <div className="absolute left-[247px] top-0 w-[866px]">
-        <div className="[word-break:break-word] font-['Poppins:ExtraBold',sans-serif] leading-[0] not-italic text-[#17181c] text-[48px] text-center w-full">
+        <div className="[word-break:break-word] font-['Poppins:ExtraBold',sans-serif] leading-[0] not-italic text-[#17181c] text-[48px] text-center top-[72px] w-full">
           <p className="leading-[54px] mb-0">Designed for</p>
           <p className="leading-[54px]">everyday decisions</p>
         </div>
