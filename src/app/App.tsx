@@ -290,13 +290,13 @@ function Hero() {
         </div>
       </div>
       {/* Mobile headline */}
-      <p className="sm:hidden absolute inset-x-0 top-6 px-4 font-['Poppins:Bold',sans-serif] leading-[0.92] text-[#070707] text-[114px] text-center tracking-[-6px]">
+      <p className="sm:hidden absolute inset-x-0 top-1/2 -translate-y-1/2 px-4 font-['Poppins:Bold',sans-serif] leading-[0.92] text-[#070707] text-[114px] text-center tracking-[-6px]">
         {`You don't need more clothes`}
       </p>
       {/* Desktop headline */}
       <p
         className="-translate-x-1/2 hidden sm:block [word-break:break-word] absolute font-['Poppins:Bold',sans-serif] leading-[92px] text-[#070707] text-[96px] text-center tracking-[-7px] w-[728px]"
-        style={{ left: 680, top: 59 }}
+        style={{ left: "50%", top: 59 }}
       >
         {`You don't need more clothes`}
       </p>
