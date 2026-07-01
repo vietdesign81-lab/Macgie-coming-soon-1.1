@@ -37,45 +37,46 @@ function HorizontalScrollSection({
   const [stickyHeight, setStickyHeight] = useState(
     typeof window !== "undefined" ? window.innerHeight - HEADER_H : 700
   );
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
 
-  // Keep sticky height in sync with viewport
   useEffect(() => {
-    const update = () => setStickyHeight(window.innerHeight - HEADER_H);
+    const update = () => {
+      setStickyHeight(window.innerHeight - HEADER_H);
+      setIsMobile(window.innerWidth < 768);
+    };
     update();
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // Convert vertical scroll progress → horizontal translateX
   useEffect(() => {
     const onScroll = () => {
-      if (!outerRef.current) return;
+      if (!outerRef.current || isMobile) return;
       const maxScroll = Math.max(0, contentWidth - window.innerWidth);
       const progress = HEADER_H - outerRef.current.getBoundingClientRect().top;
       setTranslateX(Math.max(0, Math.min(progress, maxScroll)));
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // run once on mount
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, [contentWidth]);
+  }, [contentWidth, isMobile]);
 
-  const maxScroll =
-    typeof window !== "undefined"
-      ? Math.max(0, contentWidth - window.innerWidth)
-      : Math.max(0, contentWidth - 1400);
+  // Mobile: plain horizontal swipe, no scroll-jacking
+  if (isMobile) {
+    return (
+      <div className="overflow-x-auto" style={{ backgroundColor: bg }}>
+        {children}
+      </div>
+    );
+  }
 
-  // extraBottom adds section-colored space below the sticky panel,
-  // creating visual bottom padding without affecting the scroll drive.
+  const maxScroll = Math.max(0, contentWidth - window.innerWidth);
+
   return (
     <div ref={outerRef} style={{ height: stickyHeight + maxScroll + extraBottom, backgroundColor: bg }}>
-      <div
-        style={{
-          position: "sticky",
-          top: HEADER_H,
-          height: stickyHeight,
-          overflow: "hidden",
-        }}
-      >
+      <div style={{ position: "sticky", top: HEADER_H, height: stickyHeight, overflow: "hidden" }}>
         <div
           style={{
             transform: `translateX(-${translateX}px)`,
@@ -94,39 +95,76 @@ function HorizontalScrollSection({
 
 /* ─── FIXED FLOATING HEADER ─── */
 
-function FloatingBanner() {
+function WaitlistModal({ onClose }: { onClose: () => void }) {
+  // Close on backdrop click
   return (
-    <div className="bg-black w-full flex items-center justify-center px-[30px] py-[7px]">
-      <div className="flex items-center gap-[4px]">
-        <p className="font-['Inter:Regular',sans-serif] font-normal leading-[16px] text-[12px] text-white whitespace-nowrap">
-          Get early access on launches and offers.
-        </p>
-        <a
-          href="https://tally.so/r/WOQKMj"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-['Poppins:Regular',sans-serif] leading-[16px] text-[12px] text-white tracking-[0.2px] underline decoration-solid whitespace-nowrap"
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative bg-white rounded-2xl overflow-hidden w-full max-w-[540px] h-[600px] sm:h-[680px] shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 bg-black/10 hover:bg-black/20 transition-colors rounded-full size-8 flex items-center justify-center cursor-pointer border-none"
+          aria-label="Close"
         >
-          Join the waitlist{" "}
-        </a>
-        <div className="overflow-clip relative shrink-0 size-[14px]">
-          <div className="absolute bottom-1/2 left-[15.63%] right-[15.63%] top-1/2">
-            <div className="absolute inset-[-0.5px_-5.19%]">
-              <svg className="block size-full" fill="none" viewBox="0 0 10.625 1">
-                <path d="M0.5 0.5H10.125" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M1 1L11 11M11 1L1 11" stroke="#333" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+        <iframe
+          src="https://tally.so/embed/WOQKMj?alignLeft=1&hideTitle=0&transparentBackground=0&dynamicHeight=1"
+          width="100%"
+          height="100%"
+          frameBorder="0"
+          title="Join the waitlist"
+          allowFullScreen
+        />
+      </div>
+    </div>
+  );
+}
+
+function FloatingBanner() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <div className="bg-black w-full flex items-center justify-center px-4 py-[7px]">
+        <div className="flex items-center gap-[4px] flex-wrap justify-center">
+          <p className="hidden sm:block font-['Inter:Regular',sans-serif] font-normal leading-[16px] text-[12px] text-white whitespace-nowrap">
+            Get early access on launches and offers.
+          </p>
+          <button
+            onClick={() => setOpen(true)}
+            className="font-['Poppins:Regular',sans-serif] leading-[16px] text-[12px] text-white tracking-[0.2px] underline decoration-solid whitespace-nowrap bg-transparent border-none cursor-pointer p-0"
+          >
+            Join the waitlist{" "}
+          </button>
+          <div className="overflow-clip relative shrink-0 size-[14px]">
+            <div className="absolute bottom-1/2 left-[15.63%] right-[15.63%] top-1/2">
+              <div className="absolute inset-[-0.5px_-5.19%]">
+                <svg className="block size-full" fill="none" viewBox="0 0 10.625 1">
+                  <path d="M0.5 0.5H10.125" stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
             </div>
-          </div>
-          <div className="absolute inset-[21.88%_15.63%_21.88%_56.25%]">
-            <div className="absolute inset-[-6.35%_-12.7%]">
-              <svg className="block size-full" fill="none" viewBox="0 0 4.9375 8.875">
-                <path d={svgPaths.pe224fa0} stroke="white" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <div className="absolute inset-[21.88%_15.63%_21.88%_56.25%]">
+              <div className="absolute inset-[-6.35%_-12.7%]">
+                <svg className="block size-full" fill="none" viewBox="0 0 4.9375 8.875">
+                  <path d={svgPaths.pe224fa0} stroke="white" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+      {open && <WaitlistModal onClose={() => setOpen(false)} />}
+    </>
   );
 }
 
@@ -144,7 +182,7 @@ function NavTab({
   return (
     <button
       onClick={onClick}
-      className="flex flex-col gap-[18px] items-start pt-[20px] px-[12px] pb-0 bg-transparent border-none cursor-pointer"
+      className="flex flex-col gap-[14px] sm:gap-[18px] items-start pt-[16px] sm:pt-[20px] px-[8px] sm:px-[12px] pb-0 bg-transparent border-none cursor-pointer shrink-0"
     >
       <p className="font-['Poppins:Regular',sans-serif] leading-[16px] text-[#262626] text-[12px] tracking-[0.2px] whitespace-nowrap">
         {label}
@@ -188,9 +226,9 @@ function Nav() {
   }, []);
 
   return (
-    <div className="bg-white border-b border-[#dddbdc] w-full">
-      <div className="relative flex items-center justify-between px-[68px]">
-        <div className="flex items-start">
+    <div className="bg-white border-b border-[#dddbdc] w-full min-h-[56px]">
+      <div className="relative flex items-center justify-between px-4 sm:px-[68px]">
+        <div className="flex items-start overflow-x-auto">
           <NavTab
             label="Home"
             active={active === "home"}
@@ -207,7 +245,7 @@ function Nav() {
             onClick={() => { scrollTo("section-why"); setActive("why"); }}
           />
         </div>
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <div className="hidden sm:block absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
           <div className="relative h-[25.368px] w-[87.594px]">
             <svg className="absolute block inset-0 size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 87.5944 25.368">
               <g>
@@ -230,11 +268,12 @@ function Nav() {
 
 function Hero() {
   return (
-    <div className="relative h-[816px] overflow-hidden w-full">
+    <div className="relative h-[calc(100vh-86px)] sm:h-[816px] overflow-hidden w-full">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <img alt="" className="absolute h-[115.6%] left-0 max-w-none top-[-0.02%] w-full object-cover" src={imgHero1} />
       </div>
-      <div className="absolute overflow-clip size-[24px]" style={{ left: 773, top: 551 }}>
+      {/* Desktop arrow */}
+      <div className="hidden sm:block absolute overflow-clip size-[24px]" style={{ left: 773, top: 551 }}>
         <div className="absolute bottom-1/2 left-[15.63%] right-[15.63%] top-1/2">
           <div className="absolute inset-[-0.5px_-3.03%]">
             <svg className="block size-full" fill="none" viewBox="0 0 17.5 1">
@@ -250,14 +289,17 @@ function Hero() {
           </div>
         </div>
       </div>
+      {/* Mobile headline */}
+      <p className="sm:hidden absolute inset-x-0 top-6 px-4 font-['Poppins:Bold',sans-serif] leading-[0.92] text-[#070707] text-[114px] text-center tracking-[-6px]">
+        {`You don't need more clothes`}
+      </p>
+      {/* Desktop headline */}
       <p
-  class="absolute left-1/2 top-[59px] -translate-x-1/2 w-[728px]
-         text-center font-['Poppins:Bold',sans-serif]
-         text-[96px] leading-[92px] tracking-[-7px]
-         text-[#070707] break-words"
->
-  You don't need more clothes
-</p>
+        className="-translate-x-1/2 hidden sm:block [word-break:break-word] absolute font-['Poppins:Bold',sans-serif] leading-[92px] text-[#070707] text-[96px] text-center tracking-[-7px] w-[728px]"
+        style={{ left: 680, top: 59 }}
+      >
+        {`You don't need more clothes`}
+      </p>
       <div className="absolute inset-0 pointer-events-none">
         <img alt="" className="absolute inset-0 max-w-none object-cover size-full" src={imgHero2} />
       </div>
@@ -435,53 +477,30 @@ function FromDownloadContent() {
 
 /* ─── SECTION 4: EVERYTHING YOU NEED ─── */
 
+function FeatureCard({ title, body }: { title: string; body: string | string[] }) {
+  return (
+    <div className="flex flex-col gap-4 sm:gap-5">
+      <p className="font-['Poppins:ExtraBold',sans-serif] text-[#17181c] text-[28px] sm:text-[40px] lg:text-[48px] leading-tight">{title}</p>
+      <div className="font-['Poppins:Light',sans-serif] text-[#262626] text-[15px] sm:text-[16px] leading-[1.7]">
+        {Array.isArray(body) ? body.map((line, i) => <p key={i} className="mb-0">{line}</p>) : <p>{body}</p>}
+      </div>
+    </div>
+  );
+}
+
 function EverythingYouNeedSection() {
   return (
-    <div className="relative bg-white w-[1401px] h-[951px] overflow-hidden">
-      <p className="left-1/2 -translate-x-1/2 [word-break:break-word] absolute font-['Poppins:Light',sans-serif] leading-[109px] text-[#17181c] text-[32px] text-center top-[60px] w-[708px]">
+    <div className="w-full bg-white py-14 sm:py-20 px-6 sm:px-12 lg:px-[69px]">
+      <p className="font-['Poppins:Light',sans-serif] text-[#17181c] text-[24px] sm:text-[32px] text-center mb-12 sm:mb-16 leading-tight max-w-[708px] mx-auto">
         Everything you need to get dressed smarter
       </p>
-      <div className="absolute flex flex-col gap-[80px] items-start left-[69px] top-[257px] w-[1344px]">
-        <div className="flex gap-[72px] items-start w-full">
-          <div className="flex flex-col gap-[20px] items-start shrink-0 w-[392px]">
-            <p className="font-['Poppins:ExtraBold',sans-serif] leading-[54px] min-w-full text-[#17181c] text-[48px] w-[min-content] whitespace-pre-wrap">{`Outfit \nCanvas`}</p>
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] text-[#262626] text-[16px] w-[350px]">Mix, match and create unlimited outfit combinations</p>
-          </div>
-          <div className="flex flex-col gap-[20px] items-start shrink-0 w-[392px]">
-            <p className="font-['Poppins:ExtraBold',sans-serif] leading-[54px] min-w-full text-[#17181c] text-[48px] w-[min-content]">Outfit Scheduler</p>
-            <div className="font-['Poppins:Light',sans-serif] leading-[0] text-[#262626] text-[16px] w-[350px]">
-              <p className="leading-[28px] mb-0">Plan your week ahead.</p>
-              <p className="leading-[28px]">Reduce decision fatigue every morning.</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[20px] items-start shrink-0 w-[392px]">
-            <p className="font-['Poppins:ExtraBold',sans-serif] leading-[54px] min-w-full text-[#17181c] text-[48px] w-[min-content]">Learns Your Habits</p>
-            <div className="font-['Poppins:Light',sans-serif] leading-[0] text-[#262626] text-[16px] w-[350px]">
-              <p className="leading-[28px] mb-0">Macgie remembers what you wear, what you love and what you ignore.</p>
-              <p className="leading-[28px]">Recommendations become smarter over time.</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-[72px] items-start w-full">
-          <div className="flex flex-col gap-[20px] items-start shrink-0 w-[392px]">
-            <p className="font-['Poppins:ExtraBold',sans-serif] leading-[54px] min-w-full text-[#17181c] text-[48px] w-[min-content]">Instant Outfit Suggestions</p>
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] text-[#262626] text-[16px] w-[350px]">Get outfit ideas based on weather, occasion and your wardrobe.</p>
-          </div>
-          <div className="flex flex-col gap-[20px] items-start shrink-0 w-[392px]">
-            <p className="font-['Poppins:ExtraBold',sans-serif] leading-[54px] min-w-full text-[#17181c] text-[48px] w-[min-content]">Ready-to-use Sample Wardrobe</p>
-            <div className="font-['Poppins:Light',sans-serif] leading-[0] text-[#262626] text-[16px] w-[350px]">
-              <p className="leading-[28px] mb-0">Experience the app immediately.</p>
-              <p className="leading-[28px]">No empty screens.</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-[20px] items-start shrink-0 w-[392px]">
-            <p className="font-['Poppins:ExtraBold',sans-serif] leading-[54px] min-w-full text-[#17181c] text-[48px] w-[min-content]">Auto Background Removal</p>
-            <div className="font-['Poppins:Light',sans-serif] leading-[0] text-[#262626] text-[16px] w-[350px]">
-              <p className="leading-[28px] mb-0">Just upload.</p>
-              <p className="leading-[28px]">Macgie automatically removes the background.</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 sm:gap-12 lg:gap-[72px] max-w-[1344px] mx-auto">
+        <FeatureCard title={`Outfit Canvas`} body="Mix, match and create unlimited outfit combinations" />
+        <FeatureCard title="Outfit Scheduler" body={["Plan your week ahead.", "Reduce decision fatigue every morning."]} />
+        <FeatureCard title="Learns Your Habits" body={["Macgie remembers what you wear, what you love and what you ignore.", "Recommendations become smarter over time."]} />
+        <FeatureCard title="Instant Outfit Suggestions" body="Get outfit ideas based on weather, occasion and your wardrobe." />
+        <FeatureCard title="Ready-to-use Sample Wardrobe" body={["Experience the app immediately.", "No empty screens."]} />
+        <FeatureCard title="Auto Background Removal" body={["Just upload.", "Macgie automatically removes the background."]} />
       </div>
     </div>
   );
@@ -491,30 +510,22 @@ function EverythingYouNeedSection() {
 
 function WhySampleSection() {
   return (
-    <div className="relative bg-[#17181c] w-[1401px] h-[819px] overflow-hidden">
-      <p
-        className="-translate-x-1/2 [word-break:break-word] absolute font-['Poppins:Light',sans-serif] leading-[109px] not-italic text-[#f2efec] text-[32px] text-center top-[72px] w-[794px]"
-        style={{ left: "calc(50% - 283.5px)" }}
-      >
-        Why we start with a sample wardrobe
-      </p>
-      <div className="absolute flex h-[675px] items-center justify-center left-[79px] top-[72px] w-[1202px]">
-        <div className="-scale-y-100 flex-none rotate-180">
-          <div className="h-[675px] opacity-55 relative w-[1202px]">
-            <div className="absolute inset-0 mix-blend-darken overflow-hidden pointer-events-none">
-              <img alt="" className="absolute h-full left-[0.23%] max-w-none top-0 w-[99.62%]" src={imgImage7} />
-            </div>
-          </div>
-        </div>
+    <div className="relative w-full bg-[#17181c] py-14 sm:py-20 px-6 sm:px-12 lg:px-[117px] overflow-hidden">
+      {/* Background image */}
+      <div className="absolute inset-0 -scale-y-100 rotate-180 opacity-30 sm:opacity-55 pointer-events-none mix-blend-darken">
+        <img alt="" className="w-full h-full object-cover" src={imgImage7} />
       </div>
-      <div className="absolute left-[117px] top-[159px]">
-        <div className="[word-break:break-word] font-['Poppins:ExtraBold',sans-serif] leading-[0] not-italic text-[#f2efec] text-[48px] w-[1012px] whitespace-pre-wrap">
-          <p className="leading-[54px] mb-0">Most wardrobe apps ask you to upload everything before you can do anything.</p>
-          <p className="leading-[54px] mb-0">Macgie works differently.</p>
-          <p className="leading-[54px] mb-0">&#8203;</p>
-          <p className="leading-[54px] mb-0">We include a sample wardrobe so you can experience recommendations immediately.</p>
-          <p className="leading-[54px] mb-0">&#8203;</p>
-          <p className="leading-[54px]">{`When you're ready, replace it with your own clothes for personalized styling.`}</p>
+      <div className="relative z-10 max-w-[1012px]">
+        <p className="font-['Poppins:Light',sans-serif] text-[#f2efec] text-[20px] sm:text-[32px] text-center sm:text-left mb-8 sm:mb-10">
+          Why we start with a sample wardrobe
+        </p>
+        <div className="font-['Poppins:ExtraBold',sans-serif] text-[#f2efec] text-[24px] sm:text-[36px] lg:text-[48px] leading-[1.15]">
+          <p className="mb-0">Most wardrobe apps ask you to upload everything before you can do anything.</p>
+          <p className="mb-0">Macgie works differently.</p>
+          <p className="mb-4 sm:mb-6">&nbsp;</p>
+          <p className="mb-0">We include a sample wardrobe so you can experience recommendations immediately.</p>
+          <p className="mb-4 sm:mb-6">&nbsp;</p>
+          <p>{`When you're ready, replace it with your own clothes for personalized styling.`}</p>
         </div>
       </div>
     </div>
@@ -523,52 +534,47 @@ function WhySampleSection() {
 
 /* ─── SECTION 6: DESIGNED FOR EVERYDAY DECISIONS ─── */
 
+function QuoteBadge({ text, rotate }: { text: string; rotate: string }) {
+  return (
+    <div className="flex items-center justify-center" style={{ transform: `rotate(${rotate})` }}>
+      <div className="bg-[#070707] flex items-center justify-center p-[12px] sm:p-[15px]">
+        <p className="font-['Poppins:Light',sans-serif] leading-[1.6] not-italic text-[#f2efec] text-[13px] sm:text-[16px] whitespace-nowrap">{text}</p>
+      </div>
+    </div>
+  );
+}
+
 function DesignedForSection() {
   return (
-    <div className="relative bg-white w-[1401px] h-[980px] overflow-hidden">
-      <div className="absolute left-[247px] top-0 w-[866px]">
-        <div className="[word-break:break-word] font-['Poppins:ExtraBold',sans-serif] leading-[0] not-italic text-[#17181c] text-[48px] text-center top-[72px] w-full">
-          <p className="leading-[54px] mb-0">Designed for</p>
-          <p className="leading-[54px]">everyday decisions</p>
+    <div className="w-full bg-white py-12 sm:py-16 overflow-hidden">
+      {/* Title */}
+      <div className="text-center mb-8 sm:mb-10 px-6">
+        <div className="font-['Poppins:ExtraBold',sans-serif] text-[#17181c] text-[32px] sm:text-[48px] leading-tight">
+          <p className="mb-0">Designed for</p>
+          <p>everyday decisions</p>
         </div>
       </div>
-      <div className="absolute flex h-[109.244px] items-center justify-center left-[201px] top-[178px] w-[255.632px]">
-        <div className="flex-none rotate-[-12.18deg]">
-          <div className="bg-[#070707] flex items-center justify-center p-[15px]">
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] not-italic text-[#f2efec] text-[16px] whitespace-nowrap">{`"What should I wear today?"`}</p>
-          </div>
+      {/* Badges row — top */}
+      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 px-4 mb-4 sm:mb-6">
+        <QuoteBadge text={`"What should I wear today?"`} rotate="-3deg" />
+        <QuoteBadge text={`"Something professional but comfortable."`} rotate="4deg" />
+        <QuoteBadge text={`"Plan outfits before packing."`} rotate="2deg" />
+      </div>
+      {/* Main photo */}
+      <div className="relative mx-auto max-w-[980px] px-4 sm:px-6">
+        <img alt="" className="w-full h-[260px] sm:h-[460px] lg:h-[653px] object-cover" src={imgImage15} />
+        {/* Badges overlaid on desktop */}
+        <div className="hidden sm:block absolute bottom-12 right-8">
+          <QuoteBadge text={`"Use clothes I rarely wear."`} rotate="-8deg" />
+        </div>
+        <div className="hidden sm:block absolute bottom-6 left-12">
+          <QuoteBadge text={`"Make it a little smarter."`} rotate="5deg" />
         </div>
       </div>
-      <div className="absolute flex h-[119.865px] items-center justify-center left-[533px] top-[167px] w-[381.023px]">
-        <div className="flex-none rotate-[9.58deg]">
-          <div className="bg-[#070707] flex items-center justify-center p-[15px]">
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] not-italic text-[#f2efec] text-[16px] w-[346.622px]">{`"Something professional but comfortable."`}</p>
-          </div>
-        </div>
-      </div>
-      <div className="absolute flex h-[81.764px] items-center justify-center left-[987px] top-[184px] w-[269.141px]">
-        <div className="flex-none rotate-[5.2deg]">
-          <div className="bg-[#070707] flex items-center justify-center p-[15px]">
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] not-italic text-[#f2efec] text-[16px] w-[234.977px]">{`"Plan outfits before packing."`}</p>
-          </div>
-        </div>
-      </div>
-      <div className="absolute h-[653px] left-[219px] top-[327px] w-[980px]">
-        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage15} />
-      </div>
-      <div className="absolute flex h-[172.474px] items-center justify-center left-[745px] top-[592px] w-[242.481px]">
-        <div className="flex-none rotate-[-29.74deg]">
-          <div className="bg-[#070707] flex items-center justify-center p-[15px]">
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] not-italic text-[#f2efec] text-[16px] w-[216.135px]">{`"Use clothes I rarely wear."`}</p>
-          </div>
-        </div>
-      </div>
-      <div className="absolute flex h-[106.711px] items-center justify-center left-[426px] top-[625px] w-[226.743px]">
-        <div className="flex-none rotate-[13.25deg]">
-          <div className="bg-[#070707] flex items-center justify-center p-[15px]">
-            <p className="font-['Poppins:Light',sans-serif] leading-[28px] not-italic text-[#f2efec] text-[16px] w-[189.287px]">{`"Make it a little smarter."`}</p>
-          </div>
-        </div>
+      {/* Badges row — bottom (mobile only) */}
+      <div className="flex sm:hidden flex-wrap items-center justify-center gap-4 px-4 mt-4">
+        <QuoteBadge text={`"Use clothes I rarely wear."`} rotate="-5deg" />
+        <QuoteBadge text={`"Make it a little smarter."`} rotate="4deg" />
       </div>
     </div>
   );
@@ -578,16 +584,12 @@ function DesignedForSection() {
 
 function FloatingFooter() {
   return (
-    <div className="bg-black w-full flex flex-col items-center px-[42px] py-[20px]">
-      <div className="flex flex-col md:flex-row gap-4 items-center md:items-center justify-center w-full">
-        <div className="font-['Poppins:Regular',sans-serif] leading-[0] not-italic text-[#f2efec] text-center md:text-right">
-  <p className="font-['Poppins:Bold',sans-serif] leading-[24px] mb-0 text-[16px]">
-    We believe getting dressed should feel effortless.
-  </p>
-  <p className="leading-[24px] text-[16px]">
-    Fashion apps help you buy more. We want to help you use more.
-  </p>
-</div>
+    <div className="bg-black w-full flex flex-col items-center px-4 sm:px-[42px] py-4 sm:py-[20px]">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-[25px] items-center justify-center w-full">
+        <div className="font-['Poppins:Regular',sans-serif] leading-[0] not-italic text-[#f2efec] text-center sm:text-right">
+          <p className="font-['Poppins:Bold',sans-serif] leading-[24px] mb-0 text-[16px]">We believe getting dressed should feel effortless.</p>
+          <p className="leading-[24px] text-[16px]">Fashion apps help you buy more. We want to help you use more.</p>
+        </div>
         <a
           href="https://testflight.apple.com/join/34jn3uvU"
           target="_blank"
@@ -639,6 +641,10 @@ const FAVICON_SVG = `<svg width="77" height="80" viewBox="0 0 77 80" fill="none"
 </svg>`;
 
 export default function App() {
+  const [footerVisible, setFooterVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  // Favicon
   useEffect(() => {
     const encoded = `data:image/svg+xml,${encodeURIComponent(FAVICON_SVG)}`;
     let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
@@ -648,6 +654,20 @@ export default function App() {
       document.head.appendChild(link);
     }
     link.href = encoded;
+  }, []);
+
+  // Footer fade: hide when scrolling down, show when scrolling up
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      const scrollingDown = currentY > lastScrollY.current + 4;
+      const scrollingUp = currentY < lastScrollY.current - 4;
+      if (scrollingDown) setFooterVisible(false);
+      if (scrollingUp) setFooterVisible(true);
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
@@ -672,21 +692,22 @@ export default function App() {
           <FromDownloadContent />
         </HorizontalScrollSection>
 
-        <div id="section-features" className="flex justify-center">
+        <div id="section-features">
           <EverythingYouNeedSection />
         </div>
 
-        <div id="section-why" className="flex justify-center">
+        <div id="section-why">
           <WhySampleSection />
         </div>
 
-        <div className="flex justify-center">
-          <DesignedForSection />
-        </div>
+        <DesignedForSection />
       </div>
 
-      {/* Fixed floating footer — always at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-50">
+      {/* Fixed floating footer — fades on scroll direction */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 transition-opacity duration-300"
+        style={{ opacity: footerVisible ? 1 : 0, pointerEvents: footerVisible ? "auto" : "none" }}
+      >
         <FloatingFooter />
       </div>
     </div>
